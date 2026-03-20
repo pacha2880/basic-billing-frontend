@@ -6,24 +6,18 @@
 |-------|-------------|--------|
 | 0 | Flutter project created, dependencies installed, build passing | ✅ Done |
 | 1 | Core setup: models, ApiService, BillsBloc, AuthBloc, routing | ✅ Done |
-| 2 | Screen: Pending Bills + inline Pay action | 🔄 Next |
-| 3 | Screen: Pay Bill form + confirmation | ⏳ Pending |
-| 4 | Screen: Create Bill + Payment History + routing | ⏳ Pending |
-| 5 | Polish: Material Design 3, responsive layout, error handling | ⏳ Pending |
+| 2 | Screen: Pending Bills + inline Pay action + Payment History | ✅ Done |
+| 3 | Screen: Pay Bill form + Create Bill form | 🔄 Next |
+| 4 | Polish: Material Design 3, responsive layout, error handling | ⏳ Pending |
+| 5 | OData filtering + unit tests | ⏳ Pending |
 | 6 | Delivery: README, cleanup, push to GitHub | ⏳ Pending |
 | 7 | Android (optional/fun) | ⏳ Bonus |
 
-## Block 2 — Next steps in order
+## Block 3 — Next steps in order
 
-1. lib/screens/pending_bills_screen.dart
-   - Client selector (read from AuthBloc — client already selected on home)
-   - On screen load: dispatch LoadPendingBills with current clientId
-   - Show loading indicator while BillsBloc is loading
-   - Show list of pending bills with columns: Service Type, Billing Period, Amount, Status
-   - Each bill has an inline Pay button
-   - Pressing Pay dispatches PayBill event to BillsBloc
-   - On BillPaymentSuccess: reload the list automatically
-   - Show error message if BillsBloc emits BillsError
+1. lib/screens/pay_bill_screen.dart — full form implementation
+2. lib/screens/create_bill_screen.dart — full form implementation
+3. Add CreateBillEvent to BillsBloc if needed
 
 ## Decisions Already Made
 - flutter_bloc for state management (not Riverpod or Provider)

@@ -29,7 +29,6 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
   }
 
   Future<void> _onPayBill(PayBill event, Emitter<BillsState> emit) async {
-    emit(BillsLoading());
     try {
       await paymentRepository.processPayment(
         event.clientId,
@@ -37,6 +36,7 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
         event.billingPeriod,
       );
       emit(BillPaymentSuccess());
+      emit(BillsLoading());
       final bills = await billRepository.getPendingBills(event.clientId);
       emit(BillsLoaded(bills));
     } catch (e) {
