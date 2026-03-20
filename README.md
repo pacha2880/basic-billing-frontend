@@ -1,57 +1,63 @@
 # BasicBilling Frontend
 
-Flutter web application for managing utility bill payments (water, electricity, sewer).
+Flutter web app for managing utility bill payments built as a technical test for NEXION.
+
+**Backend repository:** https://github.com/pacha2880/basic-billing-backend
 
 ## Tech Stack
-- Flutter (web)
-- flutter_bloc for state management (Bloc pattern)
-- Dio for HTTP requests with JWT interceptor
-- go_router for navigation
+- Flutter web — Dart
+- flutter_bloc — state management
+- Dio — HTTP client with JWT interceptor
+- go_router — navigation
 - Material Design 3
-- OData query parameters for filtering and sorting
 
-## Requirements
-- Flutter SDK installed
-- Backend API running on http://localhost:5214
-- See BasicBilling API repository to run the backend first
-
-## How to Run (web)
+## How to Run
+1. Make sure the backend API is running on http://localhost:5214
+2. Run the frontend:
 flutter run -d chrome
 
-## How to Build (web)
+## How to Build
 flutter build web
 
 ## Screens
-- Home: client selector with JWT authentication
-- Pending Bills: list of unpaid bills with OData filtering/sorting + inline Pay button
-- Pay Bill: form to pay a specific bill with validation
-- Create Bill: form to create a new bill with validation
-- Payment History: chronological list of paid bills with OData filtering/sorting
+
+<table>
+  <tr>
+    <td><img src="screenshots/home.png" width="160"/><br/><sub>Home</sub></td>
+    <td><img src="screenshots/pending.png" width="160"/><br/><sub>Pending Bills</sub></td>
+    <td><img src="screenshots/history.png" width="160"/><br/><sub>Payment History</sub></td>
+    <td><img src="screenshots/pay.png" width="160"/><br/><sub>Pay Bill</sub></td>
+    <td><img src="screenshots/create.png" width="160"/><br/><sub>Create Bill</sub></td>
+  </tr>
+</table>
 
 ## Features
-- Client selection with automatic JWT token retrieval
-- View pending bills per client with filter by service type and sort by amount or period
-- Pay bills inline from the pending list or via the Pay Bill form
-- Create new bills with full validation
-- View payment history with filter by service type and sort by date or amount
-- OData query parameters sent to backend for server-side filtering and sorting
-- Friendly error messages from API responses
-- Session persistence on browser refresh
+- Client selection with automatic JWT authentication
+- View pending bills with OData filtering and sorting
+- Pay bills inline or via form
+- Create new bills with validation
+- View payment history with OData filtering and sorting
 - Responsive layout: NavigationRail on desktop, BottomNavigationBar on mobile
 - Dark mode support
+- Friendly error messages from API
 
-## OData Examples (sent to backend)
-Filter by service type:
-GET /api/clients/100/pending-bills?$filter=serviceType eq 'Water'
+## Architecture
+- flutter_bloc for all state management (Bloc pattern, not Cubit)
+- Repositories as the only layer that talks to the API
+- Screens never call the API directly
+- Dio interceptor injects JWT token automatically on every request
+- OData query parameters built in repositories and passed to backend
 
-Sort by amount descending:
-GET /api/clients/100/pending-bills?$orderby=amount desc
+## Development Process
+- [Development Plan](docs/plan.md)
+- [Architecture Reference](docs/architecture.md)
+- [Decision Log](docs/decisions.md)
 
-Filter payment history:
-GET /api/clients/100/payment-history?$filter=serviceType eq 'Electricity'
-
-Sort by date:
-GET /api/clients/100/payment-history?$orderby=paidAt desc
+## What I would add with more time
+- Unit and widget tests for blocs and screens
+- OData combined filters (service type + date range)
+- Android build and testing
+- Offline support with local caching
 
 ## Not Implemented
 - Unit tests (deferred due to time constraints)
