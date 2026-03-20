@@ -147,46 +147,72 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                     itemBuilder: (context, index) {
                       final payment = state.payments[index];
                       return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          leading: CircleAvatar(
-                            backgroundColor: cs.secondaryContainer,
-                            child: Icon(_serviceIcon(payment.serviceType),
-                                color: cs.secondary),
-                          ),
-                          title: Text(payment.serviceType),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(_formatPeriod(payment.billingPeriod)),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Paid on ${_formatDate(payment.paidAt)}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: cs.onSurfaceVariant),
-                              ),
-                              const SizedBox(height: 4),
-                              Chip(
-                                label: Text(payment.status),
-                                visualDensity: VisualDensity.compact,
+                              CircleAvatar(
                                 backgroundColor: cs.secondaryContainer,
-                                labelStyle:
-                                    TextStyle(color: cs.onSecondaryContainer),
+                                child: Icon(_serviceIcon(payment.serviceType),
+                                    color: cs.secondary),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      payment.serviceType,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(_formatPeriod(payment.billingPeriod)),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Paid on ${_formatDate(payment.paidAt)}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                              color: cs.onSurfaceVariant),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Chip(
+                                      label: Text(payment.status),
+                                      visualDensity: VisualDensity.compact,
+                                      backgroundColor: cs.secondaryContainer,
+                                      labelStyle: TextStyle(
+                                          color: cs.onSecondaryContainer),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '\$${payment.amountPaid.toStringAsFixed(2)}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: cs.secondary),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                          trailing: Text(
-                            '\$${payment.amountPaid.toStringAsFixed(2)}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(color: cs.secondary),
-                          ),
-                          isThreeLine: true,
                         ),
                       );
                     },
