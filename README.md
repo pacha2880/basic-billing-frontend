@@ -4,7 +4,7 @@ Flutter web application for managing utility bill payments (water, electricity, 
 
 ## Tech Stack
 - Flutter (web)
-- flutter_bloc for state management
+- flutter_bloc for state management (Bloc pattern)
 - Dio for HTTP requests with JWT interceptor
 - go_router for navigation
 - Material Design 3
@@ -12,7 +12,7 @@ Flutter web application for managing utility bill payments (water, electricity, 
 ## Requirements
 - Flutter SDK installed
 - Backend API running on http://localhost:5214
-- Run the backend first: see BasicBilling API repository
+- See BasicBilling API repository to run the backend first
 
 ## How to Run (web)
 flutter run -d chrome
@@ -20,15 +20,28 @@ flutter run -d chrome
 ## How to Build (web)
 flutter build web
 
-## Screens
-- Home: client selector with authentication
-- Pending Bills: list of unpaid bills with inline pay action ✅
-- Payment History: chronological list of paid bills ✅
-- Pay Bill: form to pay a specific bill (in progress)
-- Create Bill: form to create a new bill (in progress)
+## Screens implemented
+- Home: client selector with JWT authentication
+- Pending Bills: list of unpaid bills with inline Pay button
+- Pay Bill: form to pay a specific bill with validation
+- Create Bill: form to create a new bill with validation
+- Payment History: chronological list of paid bills
 
-## Not Implemented Yet
-- Pay Bill and Create Bill forms (Block 3, in progress)
-- OData filtering (planned)
+## Features
+- Client selection with automatic JWT token retrieval
+- View pending bills per client
+- Pay bills inline from the pending list or via the Pay Bill form
+- Create new bills with full validation
+- View payment history per client
+- Friendly error messages from API responses
+- Session persistence on browser refresh
+
+## Not Implemented
+- OData filtering on list screens (planned)
 - Unit tests (planned)
 - Android build (optional bonus)
+
+## Notes
+- serviceType is sent as string (Water, Electricity, Sewer)
+- billingPeriod format is YYYYMM (6 digits, no dashes)
+- JWT token is obtained automatically when a client is selected

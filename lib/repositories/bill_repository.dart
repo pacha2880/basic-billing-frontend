@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../core/network/api_service.dart';
 import '../models/bill_model.dart';
 
@@ -5,11 +7,18 @@ class BillRepository {
   BillRepository();
 
   Future<List<BillModel>> getPendingBills(int clientId) async {
-    final data = await ApiService.getPendingBills(clientId);
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map((json) => BillModel.fromJson(json))
-        .toList();
+    try {
+      final data = await ApiService.getPendingBills(clientId);
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => BillModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(_extractDioMessage(e));
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Unexpected error: ${e.toString()}');
+    }
   }
 
   Future<BillModel> createBill(
@@ -25,11 +34,34 @@ class BillRepository {
       'amount': amount,
     };
 
-    final data = await ApiService.createBill(payload);
-    if (data is Map<String, dynamic>) {
-      return BillModel.fromJson(data);
+    try {
+      final data = await ApiService.createBill(payload);
+      if (data is Map<String, dynamic>) {
+        return BillModel.fromJson(data);
+      }
+      throw Exception('Unexpected createBill response: $data');
+    } on DioException catch (e) {
+      throw Exception(_extractDioMessage(e));
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Unexpected error: ${e.toString()}');
+    }
+  }
+
+  String _extractDioMessage(DioException e) {
+    final data = e.response?.data;
+    String message = 'An error occurred. Please try again.';
+
+    if (data != null && data is Map) {
+      message = data['error']
+          ?? data['message']
+          ?? data['title']
+          ?? data['detail']
+          ?? message;
+    } else if (data is String && data.isNotEmpty) {
+      message = data;
     }
 
-    throw StateError('Unexpected createBill response: $data');
+    return message;
   }
 }

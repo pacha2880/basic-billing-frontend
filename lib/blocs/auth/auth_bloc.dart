@@ -1,3 +1,6 @@
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
+import 'dart:html' as html;
+
 import 'package:bloc/bloc.dart';
 
 import '../../core/network/api_service.dart';
@@ -16,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final token = await ApiService.getToken(event.clientId);
       ApiService.setToken(token);
+      html.window.sessionStorage['clientId'] = event.clientId.toString();
       emit(AuthAuthenticated(clientId: event.clientId, token: token));
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -25,6 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onLogoutRequested(
       AuthLogoutRequested event, Emitter<AuthState> emit) {
     ApiService.clearToken();
+    html.window.sessionStorage.remove('clientId');
     emit(AuthInitial());
   }
 }

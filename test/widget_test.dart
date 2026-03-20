@@ -8,10 +8,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:basic_billing_frontend/app.dart';
+import 'package:basic_billing_frontend/blocs/auth/auth_bloc.dart';
 
 void main() {
   testWidgets('Home screen loads', (WidgetTester tester) async {
-    await tester.pumpWidget(const App());
+    await tester.pumpWidget(App(authBloc: AuthBloc()));
     await tester.pumpAndSettle();
 
     expect(find.text('BasicBilling Home'), findsOneWidget);

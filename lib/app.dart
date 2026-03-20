@@ -15,7 +15,9 @@ import 'screens/pending_bills_screen.dart';
 import 'screens/pay_bill_screen.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  final AuthBloc authBloc;
+
+  const App({super.key, required this.authBloc});
 
   static final _router = GoRouter(
     routes: [
@@ -31,7 +33,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthBloc()),
+        BlocProvider.value(value: authBloc),
         BlocProvider(create: (context) => BillsBloc(
           billRepository: BillRepository(),
           paymentRepository: PaymentRepository(),

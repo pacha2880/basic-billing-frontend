@@ -32,3 +32,5 @@ class BillsError extends BillsState {
 }
 
 class BillPaymentSuccess extends BillsState {}
+
+class BillCreatedSuccess extends BillsState {}

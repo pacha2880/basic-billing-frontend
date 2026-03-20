@@ -30,3 +30,20 @@ class PayBill extends BillsEvent {
   @override
   List<Object> get props => [clientId, serviceType, billingPeriod];
 }
+
+class CreateBillEvent extends BillsEvent {
+  final int clientId;
+  final String serviceType;
+  final String billingPeriod;
+  final double amount;
+
+  const CreateBillEvent({
+    required this.clientId,
+    required this.serviceType,
+    required this.billingPeriod,
+    required this.amount,
+  });
+
+  @override
+  List<Object> get props => [clientId, serviceType, billingPeriod, amount];
+}

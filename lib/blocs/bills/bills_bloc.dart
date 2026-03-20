@@ -15,6 +15,7 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
   }) : super(BillsInitial()) {
     on<LoadPendingBills>(_onLoadPendingBills);
     on<PayBill>(_onPayBill);
+    on<CreateBillEvent>(_onCreateBill);
   }
 
   Future<void> _onLoadPendingBills(
@@ -24,11 +25,12 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
       final bills = await billRepository.getPendingBills(event.clientId);
       emit(BillsLoaded(bills));
     } catch (e) {
-      emit(BillsError(e.toString()));
+      emit(BillsError(_extractMessage(e)));
     }
   }
 
   Future<void> _onPayBill(PayBill event, Emitter<BillsState> emit) async {
+    emit(BillsLoading());
     try {
       await paymentRepository.processPayment(
         event.clientId,
@@ -40,7 +42,34 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
       final bills = await billRepository.getPendingBills(event.clientId);
       emit(BillsLoaded(bills));
     } catch (e) {
-      emit(BillsError(e.toString()));
+      emit(BillsError(_extractMessage(e)));
+      try {
+        final bills = await billRepository.getPendingBills(event.clientId);
+        emit(BillsLoaded(bills));
+      } catch (_) {
+        // keep error state if reload also fails
+      }
+    }
+  }
+
+  String _extractMessage(Object e) {
+    final s = e.toString();
+    return s.startsWith('Exception: ') ? s.substring(11) : s;
+  }
+
+  Future<void> _onCreateBill(
+      CreateBillEvent event, Emitter<BillsState> emit) async {
+    emit(BillsLoading());
+    try {
+      await billRepository.createBill(
+        event.clientId,
+        event.serviceType,
+        event.billingPeriod,
+        event.amount,
+      );
+      emit(BillCreatedSuccess());
+    } catch (e) {
+      emit(BillsError(_extractMessage(e)));
     }
   }
 }
