@@ -22,7 +22,11 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
       LoadPendingBills event, Emitter<BillsState> emit) async {
     emit(BillsLoading());
     try {
-      final bills = await billRepository.getPendingBills(event.clientId);
+      final bills = await billRepository.getPendingBills(
+        event.clientId,
+        filterServiceType: event.filterServiceType,
+        orderBy: event.orderBy,
+      );
       emit(BillsLoaded(bills));
     } catch (e) {
       emit(BillsError(_extractMessage(e)));

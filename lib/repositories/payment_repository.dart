@@ -44,9 +44,21 @@ class PaymentRepository {
     }
   }
 
-  Future<List<PaymentHistoryModel>> getPaymentHistory(int clientId) async {
+  Future<List<PaymentHistoryModel>> getPaymentHistory(
+    int clientId, {
+    String? filterServiceType,
+    String? orderBy,
+  }) async {
+    final queryParams = <String, String>{};
+    if (filterServiceType != null && filterServiceType.isNotEmpty) {
+      queryParams['\$filter'] = "serviceType eq '$filterServiceType'";
+    }
+    if (orderBy != null && orderBy.isNotEmpty) {
+      queryParams['\$orderby'] = orderBy;
+    }
     try {
-      final data = await ApiService.getPaymentHistory(clientId);
+      final data = await ApiService.getPaymentHistory(clientId,
+          queryParams: queryParams.isEmpty ? null : queryParams);
       return data
           .whereType<Map<String, dynamic>>()
           .map((json) => PaymentHistoryModel.fromJson(json))

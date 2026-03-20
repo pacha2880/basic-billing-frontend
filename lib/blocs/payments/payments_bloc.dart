@@ -16,7 +16,11 @@ class PaymentsBloc extends Bloc<PaymentsEvent, PaymentsState> {
       LoadPaymentHistory event, Emitter<PaymentsState> emit) async {
     emit(PaymentsLoading());
     try {
-      final payments = await paymentRepository.getPaymentHistory(event.clientId);
+      final payments = await paymentRepository.getPaymentHistory(
+        event.clientId,
+        filterServiceType: event.filterServiceType,
+        orderBy: event.orderBy,
+      );
       emit(PaymentsLoaded(payments));
     } catch (e) {
       emit(PaymentsError(e.toString()));

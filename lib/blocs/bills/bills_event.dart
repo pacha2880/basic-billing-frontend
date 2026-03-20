@@ -9,11 +9,13 @@ abstract class BillsEvent extends Equatable {
 
 class LoadPendingBills extends BillsEvent {
   final int clientId;
+  final String? filterServiceType;
+  final String? orderBy;
 
-  const LoadPendingBills(this.clientId);
+  const LoadPendingBills(this.clientId, {this.filterServiceType, this.orderBy});
 
   @override
-  List<Object> get props => [clientId];
+  List<Object?> get props => [clientId, filterServiceType, orderBy];
 }
 
 class PayBill extends BillsEvent {

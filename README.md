@@ -8,6 +8,7 @@ Flutter web application for managing utility bill payments (water, electricity, 
 - Dio for HTTP requests with JWT interceptor
 - go_router for navigation
 - Material Design 3
+- OData query parameters for filtering and sorting
 
 ## Requirements
 - Flutter SDK installed
@@ -20,28 +21,38 @@ flutter run -d chrome
 ## How to Build (web)
 flutter build web
 
-## Screens implemented
+## Screens
 - Home: client selector with JWT authentication
-- Pending Bills: list of unpaid bills with inline Pay button
+- Pending Bills: list of unpaid bills with OData filtering/sorting + inline Pay button
 - Pay Bill: form to pay a specific bill with validation
 - Create Bill: form to create a new bill with validation
-- Payment History: chronological list of paid bills
+- Payment History: chronological list of paid bills with OData filtering/sorting
 
 ## Features
 - Client selection with automatic JWT token retrieval
-- View pending bills per client
+- View pending bills per client with filter by service type and sort by amount or period
 - Pay bills inline from the pending list or via the Pay Bill form
 - Create new bills with full validation
-- View payment history per client
+- View payment history with filter by service type and sort by date or amount
+- OData query parameters sent to backend for server-side filtering and sorting
 - Friendly error messages from API responses
 - Session persistence on browser refresh
+- Responsive layout: NavigationRail on desktop, BottomNavigationBar on mobile
+- Dark mode support
+
+## OData Examples (sent to backend)
+Filter by service type:
+GET /api/clients/100/pending-bills?$filter=serviceType eq 'Water'
+
+Sort by amount descending:
+GET /api/clients/100/pending-bills?$orderby=amount desc
+
+Filter payment history:
+GET /api/clients/100/payment-history?$filter=serviceType eq 'Electricity'
+
+Sort by date:
+GET /api/clients/100/payment-history?$orderby=paidAt desc
 
 ## Not Implemented
-- OData filtering on list screens (planned)
-- Unit tests (planned)
+- Unit tests (deferred due to time constraints)
 - Android build (optional bonus)
-
-## Notes
-- serviceType is sent as string (Water, Electricity, Sewer)
-- billingPeriod format is YYYYMM (6 digits, no dashes)
-- JWT token is obtained automatically when a client is selected

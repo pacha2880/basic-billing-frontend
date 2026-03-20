@@ -6,9 +6,21 @@ import '../models/bill_model.dart';
 class BillRepository {
   BillRepository();
 
-  Future<List<BillModel>> getPendingBills(int clientId) async {
+  Future<List<BillModel>> getPendingBills(
+    int clientId, {
+    String? filterServiceType,
+    String? orderBy,
+  }) async {
+    final queryParams = <String, String>{};
+    if (filterServiceType != null && filterServiceType.isNotEmpty) {
+      queryParams['\$filter'] = "serviceType eq '$filterServiceType'";
+    }
+    if (orderBy != null && orderBy.isNotEmpty) {
+      queryParams['\$orderby'] = orderBy;
+    }
     try {
-      final data = await ApiService.getPendingBills(clientId);
+      final data = await ApiService.getPendingBills(clientId,
+          queryParams: queryParams.isEmpty ? null : queryParams);
       return data
           .whereType<Map<String, dynamic>>()
           .map((json) => BillModel.fromJson(json))

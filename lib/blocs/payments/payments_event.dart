@@ -9,11 +9,13 @@ abstract class PaymentsEvent extends Equatable {
 
 class LoadPaymentHistory extends PaymentsEvent {
   final int clientId;
+  final String? filterServiceType;
+  final String? orderBy;
 
-  const LoadPaymentHistory(this.clientId);
+  const LoadPaymentHistory(this.clientId, {this.filterServiceType, this.orderBy});
 
   @override
-  List<Object> get props => [clientId];
+  List<Object?> get props => [clientId, filterServiceType, orderBy];
 }
 
 class CreatePayment extends PaymentsEvent {

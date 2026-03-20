@@ -43,17 +43,25 @@ class ApiService {
     throw StateError('Unexpected token response: ${response.data}');
   }
 
-  static Future<List<dynamic>> getPendingBills(int clientId) async {
+  static Future<List<dynamic>> getPendingBills(
+    int clientId, {
+    Map<String, String>? queryParams,
+  }) async {
     final response = await _dio.get(
       '${ApiConstants.pendingBills}/$clientId/pending-bills',
+      queryParameters: queryParams,
     );
 
     return (response.data is List) ? (response.data as List<dynamic>) : <dynamic>[];
   }
 
-  static Future<List<dynamic>> getPaymentHistory(int clientId) async {
+  static Future<List<dynamic>> getPaymentHistory(
+    int clientId, {
+    Map<String, String>? queryParams,
+  }) async {
     final response = await _dio.get(
       '${ApiConstants.paymentHistory}/$clientId/payment-history',
+      queryParameters: queryParams,
     );
 
     return (response.data is List) ? (response.data as List<dynamic>) : <dynamic>[];

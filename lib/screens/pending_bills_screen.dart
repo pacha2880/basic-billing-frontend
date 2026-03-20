@@ -7,6 +7,7 @@ import '../blocs/bills/bills_bloc.dart';
 import '../blocs/bills/bills_event.dart';
 import '../blocs/bills/bills_state.dart';
 import '../models/client_model.dart';
+import '../widgets/filter_bar.dart';
 
 class PendingBillsScreen extends StatefulWidget {
   const PendingBillsScreen({super.key});
@@ -17,6 +18,8 @@ class PendingBillsScreen extends StatefulWidget {
 
 class _PendingBillsScreenState extends State<PendingBillsScreen> {
   int? _payingBillId;
+  String? _filterServiceType;
+  String? _orderBy;
 
   @override
   void initState() {
@@ -27,7 +30,11 @@ class _PendingBillsScreenState extends State<PendingBillsScreen> {
   void _load() {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      context.read<BillsBloc>().add(LoadPendingBills(authState.clientId));
+      context.read<BillsBloc>().add(LoadPendingBills(
+            authState.clientId,
+            filterServiceType: _filterServiceType,
+            orderBy: _orderBy,
+          ));
     }
   }
 
@@ -140,103 +147,136 @@ class _PendingBillsScreenState extends State<PendingBillsScreen> {
                 alignment: Alignment.topCenter,
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 700),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: state.bills.length,
-                    itemBuilder: (context, index) {
-                      final bill = state.bills[index];
-                      final isPaying = _payingBillId == bill.id;
-                      final isAnyPaying = _payingBillId != null;
+                  child: Column(
+                    children: [
+                      FilterBar(
+                        filterServiceType: _filterServiceType,
+                        orderBy: _orderBy,
+                        onFilterChanged: (value) {
+                          setState(() => _filterServiceType = value);
+                          _load();
+                        },
+                        onOrderByChanged: (value) {
+                          setState(() => _orderBy = value);
+                          _load();
+                        },
+                        orderByOptions: const {
+                          'amount asc': 'Amount (low → high)',
+                          'amount desc': 'Amount (high → low)',
+                          'billingPeriod asc': 'Period (oldest first)',
+                          'billingPeriod desc': 'Period (newest first)',
+                        },
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.only(
+                              left: 16, right: 16, bottom: 16),
+                          itemCount: state.bills.length,
+                          itemBuilder: (context, index) {
+                            final bill = state.bills[index];
+                            final isPaying = _payingBillId == bill.id;
+                            final isAnyPaying = _payingBillId != null;
 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: cs.primaryContainer,
-                                child: Icon(_serviceIcon(bill.serviceType),
-                                    color: cs.primary),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      bill.serviceType,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.bold),
+                                    CircleAvatar(
+                                      backgroundColor: cs.primaryContainer,
+                                      child: Icon(
+                                          _serviceIcon(bill.serviceType),
+                                          color: cs.primary),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(_formatPeriod(bill.billingPeriod)),
-                                    const SizedBox(height: 6),
-                                    Chip(
-                                      label: Text(bill.status),
-                                      visualDensity: VisualDensity.compact,
-                                      backgroundColor: cs.tertiaryContainer,
-                                      labelStyle: TextStyle(
-                                          color: cs.onTertiaryContainer),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            bill.serviceType,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium
+                                                ?.copyWith(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(_formatPeriod(
+                                              bill.billingPeriod)),
+                                          const SizedBox(height: 6),
+                                          Chip(
+                                            label: Text(bill.status),
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            backgroundColor:
+                                                cs.tertiaryContainer,
+                                            labelStyle: TextStyle(
+                                                color: cs.onTertiaryContainer),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '\$${bill.amount.toStringAsFixed(2)}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: cs.primary),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        if (isPaying)
+                                          const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2),
+                                          )
+                                        else
+                                          FilledButton.tonal(
+                                            onPressed: isAnyPaying ||
+                                                    clientId == null
+                                                ? null
+                                                : () {
+                                                    setState(() =>
+                                                        _payingBillId =
+                                                            bill.id);
+                                                    context
+                                                        .read<BillsBloc>()
+                                                        .add(PayBill(
+                                                          clientId: clientId,
+                                                          serviceType:
+                                                              bill.serviceType,
+                                                          billingPeriod:
+                                                              bill.billingPeriod,
+                                                        ));
+                                                  },
+                                            child: const Text('Pay'),
+                                          ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '\$${bill.amount.toStringAsFixed(2)}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: cs.primary),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  if (isPaying)
-                                    const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
-                                    )
-                                  else
-                                    FilledButton.tonal(
-                                      onPressed:
-                                          isAnyPaying || clientId == null
-                                              ? null
-                                              : () {
-                                                  setState(() =>
-                                                      _payingBillId = bill.id);
-                                                  context
-                                                      .read<BillsBloc>()
-                                                      .add(PayBill(
-                                                        clientId: clientId,
-                                                        serviceType:
-                                                            bill.serviceType,
-                                                        billingPeriod:
-                                                            bill.billingPeriod,
-                                                      ));
-                                                },
-                                      child: const Text('Pay'),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
               ),
