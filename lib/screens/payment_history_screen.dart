@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
 import '../blocs/payments/payments_bloc.dart';
@@ -18,17 +19,17 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = context.read<AuthBloc>().state;
-      if (authState is AuthAuthenticated) {
-        context
-            .read<PaymentsBloc>()
-            .add(LoadPaymentHistory(authState.clientId));
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  String _formatBillingPeriod(String period) {
+  void _load() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      context.read<PaymentsBloc>().add(LoadPaymentHistory(authState.clientId));
+    }
+  }
+
+  String _formatPeriod(String period) {
     if (period.length < 6) return period;
     final year = period.substring(0, 4);
     final month = int.tryParse(period.substring(4, 6)) ?? 0;
@@ -63,6 +64,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final authState = context.watch<AuthBloc>().state;
     final clientName = authState is AuthAuthenticated
         ? kClients
@@ -95,60 +97,102 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
 
           if (state is PaymentsError) {
             return Center(
-              child: Text(
-                state.message,
-                style: const TextStyle(color: Colors.red),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: cs.error),
+                  const SizedBox(height: 12),
+                  Text(state.message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: cs.error)),
+                ],
               ),
             );
           }
 
           if (state is PaymentsLoaded) {
             if (state.payments.isEmpty) {
-              return const Center(child: Text('No payment history'));
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.history, size: 72, color: cs.outlineVariant),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No payment history',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Payments will appear here once made.',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              );
             }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.payments.length,
-              itemBuilder: (context, index) {
-                final payment = state.payments[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
+
+            return RefreshIndicator(
+              onRefresh: () async => _load(),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Icon(_serviceIcon(payment.serviceType), size: 36),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
+                    itemCount: state.payments.length,
+                    itemBuilder: (context, index) {
+                      final payment = state.payments[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          leading: CircleAvatar(
+                            backgroundColor: cs.secondaryContainer,
+                            child: Icon(_serviceIcon(payment.serviceType),
+                                color: cs.secondary),
+                          ),
+                          title: Text(payment.serviceType),
+                          subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                payment.serviceType,
-                                style:
-                                    Theme.of(context).textTheme.titleMedium,
-                              ),
+                              Text(_formatPeriod(payment.billingPeriod)),
                               const SizedBox(height: 4),
-                              Text(_formatBillingPeriod(
-                                  payment.billingPeriod)),
                               Text(
-                                  '\$${payment.amountPaid.toStringAsFixed(2)}'),
-                              Text('Paid on ${_formatDate(payment.paidAt)}'),
+                                'Paid on ${_formatDate(payment.paidAt)}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: cs.onSurfaceVariant),
+                              ),
                               const SizedBox(height: 4),
                               Chip(
                                 label: Text(payment.status),
-                                backgroundColor: Colors.green.shade100,
-                                labelStyle: TextStyle(
-                                    color: Colors.green.shade800),
+                                visualDensity: VisualDensity.compact,
+                                backgroundColor: cs.secondaryContainer,
+                                labelStyle:
+                                    TextStyle(color: cs.onSecondaryContainer),
                               ),
                             ],
                           ),
+                          trailing: Text(
+                            '\$${payment.amountPaid.toStringAsFixed(2)}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(color: cs.secondary),
+                          ),
+                          isThreeLine: true,
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ),
             );
           }
 

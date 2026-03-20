@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
 import '../blocs/bills/bills_bloc.dart';
@@ -65,6 +66,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final authState = context.watch<AuthBloc>().state;
     final clientName = authState is AuthAuthenticated
         ? kClients
@@ -94,7 +96,10 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
           if (state is BillCreatedSuccess) {
             setState(() => _isSubmitting = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Bill created successfully')),
+              SnackBar(
+                content: const Text('Bill created successfully'),
+                backgroundColor: cs.secondary,
+              ),
             );
             _clearForm();
           } else if (state is BillsError) {
@@ -102,114 +107,150 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedClientId,
-                    decoration: const InputDecoration(
-                      labelText: 'Client',
-                      border: OutlineInputBorder(),
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Create a Bill',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 24),
+                          DropdownButtonFormField<int>(
+                            initialValue: _selectedClientId,
+                            decoration: const InputDecoration(
+                              labelText: 'Client',
+                              prefixIcon: Icon(Icons.person_outline),
+                            ),
+                            items: kClients
+                                .map((c) => DropdownMenuItem<int>(
+                                      value: c.id,
+                                      child: Text('${c.id} — ${c.name}'),
+                                    ))
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => _selectedClientId = value),
+                            validator: (value) =>
+                                value == null ? 'Please select a client' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            initialValue: _serviceType,
+                            decoration: const InputDecoration(
+                              labelText: 'Service Type',
+                              prefixIcon: Icon(Icons.category_outlined),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                  value: 'Water', child: Text('Water')),
+                              DropdownMenuItem(
+                                  value: 'Electricity',
+                                  child: Text('Electricity')),
+                              DropdownMenuItem(
+                                  value: 'Sewer', child: Text('Sewer')),
+                            ],
+                            onChanged: (value) =>
+                                setState(() => _serviceType = value),
+                            validator: (value) => value == null
+                                ? 'Please select a service type'
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _billingPeriodController,
+                            decoration: const InputDecoration(
+                              labelText: 'Billing Period',
+                              hintText: 'YYYYMM',
+                              prefixIcon: Icon(Icons.calendar_month_outlined),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Billing period is required';
+                              }
+                              if (!RegExp(r'^\d{6}$')
+                                  .hasMatch(value.trim())) {
+                                return 'Must be 6 digits in YYYYMM format';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _amountController,
+                            decoration: const InputDecoration(
+                              labelText: 'Amount',
+                              hintText: '0.00',
+                              prefixText: '\$',
+                              prefixIcon: Icon(Icons.attach_money),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Amount is required';
+                              }
+                              final amount = double.tryParse(value.trim());
+                              if (amount == null) {
+                                return 'Enter a valid number';
+                              }
+                              if (amount <= 0) {
+                                return 'Amount must be greater than 0';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          if (state is BillsError) ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: cs.errorContainer,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error_outline,
+                                      color: cs.onErrorContainer, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      state.message,
+                                      style: TextStyle(
+                                          color: cs.onErrorContainer),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          FilledButton(
+                            onPressed: _isSubmitting ? null : _submit,
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white),
+                                  )
+                                : const Text('Create Bill'),
+                          ),
+                        ],
+                      ),
                     ),
-                    items: kClients
-                        .map((client) => DropdownMenuItem<int>(
-                              value: client.id,
-                              child: Text('${client.id} - ${client.name}'),
-                            ))
-                        .toList(),
-                    onChanged: (value) =>
-                        setState(() => _selectedClientId = value),
-                    validator: (value) =>
-                        value == null ? 'Please select a client' : null,
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: _serviceType,
-                    decoration: const InputDecoration(
-                      labelText: 'Service Type',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                          value: 'Water', child: Text('Water')),
-                      DropdownMenuItem(
-                          value: 'Electricity', child: Text('Electricity')),
-                      DropdownMenuItem(
-                          value: 'Sewer', child: Text('Sewer')),
-                    ],
-                    onChanged: (value) =>
-                        setState(() => _serviceType = value),
-                    validator: (value) =>
-                        value == null ? 'Please select a service type' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _billingPeriodController,
-                    decoration: const InputDecoration(
-                      labelText: 'Billing Period',
-                      hintText: 'YYYYMM',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Billing period is required';
-                      }
-                      if (!RegExp(r'^\d{6}$').hasMatch(value.trim())) {
-                        return 'Must be 6 digits in YYYYMM format';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _amountController,
-                    decoration: const InputDecoration(
-                      labelText: 'Amount',
-                      hintText: '0.00',
-                      prefixText: '\$',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Amount is required';
-                      }
-                      final amount = double.tryParse(value.trim());
-                      if (amount == null) {
-                        return 'Enter a valid number';
-                      }
-                      if (amount <= 0) {
-                        return 'Amount must be greater than 0';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submit,
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Create Bill'),
-                  ),
-                  if (state is BillsError) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      state.message,
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
           );

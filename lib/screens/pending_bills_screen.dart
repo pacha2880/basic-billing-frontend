@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
 import '../blocs/bills/bills_bloc.dart';
@@ -20,15 +21,17 @@ class _PendingBillsScreenState extends State<PendingBillsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = context.read<AuthBloc>().state;
-      if (authState is AuthAuthenticated) {
-        context.read<BillsBloc>().add(LoadPendingBills(authState.clientId));
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  String _formatBillingPeriod(String period) {
+  void _load() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      context.read<BillsBloc>().add(LoadPendingBills(authState.clientId));
+    }
+  }
+
+  String _formatPeriod(String period) {
     if (period.length < 6) return period;
     final year = period.substring(0, 4);
     final month = int.tryParse(period.substring(4, 6)) ?? 0;
@@ -55,6 +58,7 @@ class _PendingBillsScreenState extends State<PendingBillsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final authState = context.watch<AuthBloc>().state;
     final clientId =
         authState is AuthAuthenticated ? authState.clientId : null;
@@ -90,6 +94,12 @@ class _PendingBillsScreenState extends State<PendingBillsScreen> {
             );
           } else if (state is BillsError) {
             setState(() => _payingBillId = null);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: cs.error,
+              ),
+            );
           }
         },
         builder: (context, state) {
@@ -97,82 +107,121 @@ class _PendingBillsScreenState extends State<PendingBillsScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is BillsError) {
-            return Center(
-              child: Text(
-                state.message,
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          }
-
           if (state is BillsLoaded) {
             if (state.bills.isEmpty) {
-              return const Center(child: Text('No pending bills'));
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle_outline,
+                        size: 72, color: cs.primary),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No pending bills',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'All caught up!',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              );
             }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.bills.length,
-              itemBuilder: (context, index) {
-                final bill = state.bills[index];
-                final isPaying = _payingBillId == bill.id;
-                final isAnyPaying = _payingBillId != null;
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
+            return RefreshIndicator(
+              onRefresh: () async => _load(),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Icon(_serviceIcon(bill.serviceType), size: 36),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
+                    itemCount: state.bills.length,
+                    itemBuilder: (context, index) {
+                      final bill = state.bills[index];
+                      final isPaying = _payingBillId == bill.id;
+                      final isAnyPaying = _payingBillId != null;
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          leading: CircleAvatar(
+                            backgroundColor: cs.primaryContainer,
+                            child: Icon(_serviceIcon(bill.serviceType),
+                                color: cs.primary),
+                          ),
+                          title: Text(bill.serviceType),
+                          subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                bill.serviceType,
-                                style:
-                                    Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(_formatBillingPeriod(bill.billingPeriod)),
-                              Text('\$${bill.amount.toStringAsFixed(2)}'),
+                              Text(_formatPeriod(bill.billingPeriod)),
                               const SizedBox(height: 4),
                               Chip(
                                 label: Text(bill.status),
-                                backgroundColor: Colors.orange.shade100,
-                                labelStyle: TextStyle(
-                                    color: Colors.orange.shade800),
+                                visualDensity: VisualDensity.compact,
+                                backgroundColor: cs.tertiaryContainer,
+                                labelStyle:
+                                    TextStyle(color: cs.onTertiaryContainer),
                               ),
                             ],
                           ),
-                        ),
-                        if (isPaying)
-                          const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        else
-                          ElevatedButton(
-                            onPressed: isAnyPaying || clientId == null
-                                ? null
-                                : () {
-                                    setState(() => _payingBillId = bill.id);
-                                    context.read<BillsBloc>().add(PayBill(
-                                          clientId: clientId,
-                                          serviceType: bill.serviceType,
-                                          billingPeriod: bill.billingPeriod,
-                                        ));
-                                  },
-                            child: const Text('Pay'),
+                          trailing: SizedBox(
+                            width: 120,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '\$${bill.amount.toStringAsFixed(2)}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(color: cs.primary),
+                                ),
+                                const SizedBox(height: 8),
+                                if (isPaying)
+                                  const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  )
+                                else
+                                  FilledButton.tonal(
+                                    onPressed: isAnyPaying || clientId == null
+                                        ? null
+                                        : () {
+                                            setState(
+                                                () => _payingBillId = bill.id);
+                                            context.read<BillsBloc>().add(
+                                                  PayBill(
+                                                    clientId: clientId,
+                                                    serviceType:
+                                                        bill.serviceType,
+                                                    billingPeriod:
+                                                        bill.billingPeriod,
+                                                  ),
+                                                );
+                                          },
+                                    child: const Text('Pay'),
+                                  ),
+                              ],
+                            ),
                           ),
-                      ],
-                    ),
+                          isThreeLine: true,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ),
             );
           }
 
