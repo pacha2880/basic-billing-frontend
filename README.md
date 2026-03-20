@@ -22,13 +22,13 @@ flutter build web
 
 ## Screens
 - Home: client selector with authentication
-- Pending Bills: list of unpaid bills with inline pay action (in progress)
-- Pay Bill: form to pay a specific bill (pending)
-- Create Bill: form to create a new bill (pending)
-- Payment History: chronological list of paid bills (pending)
+- Pending Bills: list of unpaid bills with inline pay action ✅
+- Payment History: chronological list of paid bills ✅
+- Pay Bill: form to pay a specific bill (in progress)
+- Create Bill: form to create a new bill (in progress)
 
 ## Not Implemented Yet
-- Full screen implementations (Block 2-4, in progress)
+- Pay Bill and Create Bill forms (Block 3, in progress)
 - OData filtering (planned)
 - Unit tests (planned)
 - Android build (optional bonus)
