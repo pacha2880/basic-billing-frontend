@@ -10,7 +10,7 @@
 | 3 | Screen: Pay Bill form + Create Bill form + error handling | ✅ Done |
 | 4 | Polish: Material Design 3, responsive layout, navigation | ✅ Done |
 | 5 | OData filtering and sorting on list screens | ✅ Done |
-| 6 | Delivery: README, cleanup, push to GitHub | ⏳ Next |
+| 6 | Delivery: README, cleanup, push to GitHub | ✅ Done |
 | 7 | Android (optional/fun) | ⏳ Bonus |
 
 ## Decisions Already Made

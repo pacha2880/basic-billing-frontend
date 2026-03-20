@@ -14,10 +14,15 @@ Flutter web app for managing utility bill payments built as a technical test for
 ## How to Run
 1. Make sure the backend API is running on http://localhost:5214
 2. Run the frontend:
+
+```
 flutter run -d chrome
+```
 
 ## How to Build
+```
 flutter build web
+```
 
 ## Screens
 

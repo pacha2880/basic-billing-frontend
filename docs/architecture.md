@@ -46,6 +46,8 @@ basic_billing_frontend/
 │   │       ├── payments_bloc.dart
 │   │       ├── payments_event.dart
 │   │       └── payments_state.dart
+│   ├── widgets/
+│   │   └── filter_bar.dart             ← shared OData filter/sort bar
 │   └── screens/
 │       ├── home_screen.dart
 │       ├── pending_bills_screen.dart
@@ -84,12 +86,12 @@ basic_billing_frontend/
 
 ## API Endpoints Used
 
-GET  /api/clients/{id}/pending-bills    → List<BillModel>
+GET  /api/clients/{id}/pending-bills    → List<BillModel>  (supports OData: $filter, $orderby)
 POST /api/payments                      → PaymentHistoryModel
      body: { clientId, serviceType, billingPeriod }
 POST /api/bills                         → BillModel
      body: { clientId, serviceType, billingPeriod, amount }
-GET  /api/clients/{id}/payment-history  → List<PaymentHistoryModel>
+GET  /api/clients/{id}/payment-history  → List<PaymentHistoryModel>  (supports OData: $filter, $orderby)
 POST /api/auth/token                    → { token: string }
      body: { clientId }
 

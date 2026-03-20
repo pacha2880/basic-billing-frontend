@@ -11,7 +11,8 @@
 - serviceType sent as string to match backend JsonStringEnumConverter
 - billingPeriod format: YYYYMM (6 digits, no dashes)
 - Backend base URL: http://localhost:5214 (development only)
-
-I will manually copy two PDF files into this folder:
-- requirements-frontend.pdf (primary reference for this project)
-- requirements-backend.pdf (secondary reference, already implemented)
+- Session persistence: dart:html sessionStorage saves clientId across browser refreshes
+- OData: $filter and $orderby built in repositories, passed as Dio queryParameters
+- Error extraction order: error → message → detail → title (detail before title to avoid generic HTTP status labels)
+- Navigation shell: ShellRoute with NavigationRail (>600px) / NavigationBar (≤600px)
+- Unit tests deferred due to time constraints
