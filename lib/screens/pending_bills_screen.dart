@@ -98,6 +98,7 @@ class _PendingBillsScreenState extends State<PendingBillsScreen> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: cs.error,
+                duration: const Duration(seconds: 6),
               ),
             );
           }

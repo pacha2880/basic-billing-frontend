@@ -22,6 +22,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   final _billingPeriodController = TextEditingController();
   final _amountController = TextEditingController();
   bool _isSubmitting = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
       _serviceType = null;
       _billingPeriodController.clear();
       _amountController.clear();
+      _errorMessage = null;
     });
     _formKey.currentState?.reset();
   }
@@ -94,7 +96,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
       body: BlocConsumer<BillsBloc, BillsState>(
         listener: (context, state) {
           if (state is BillCreatedSuccess) {
-            setState(() => _isSubmitting = false);
+            setState(() { _isSubmitting = false; _errorMessage = null; });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: const Text('Bill created successfully'),
@@ -103,7 +105,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
             );
             _clearForm();
           } else if (state is BillsError) {
-            setState(() => _isSubmitting = false);
+            setState(() { _isSubmitting = false; _errorMessage = state.message; });
           }
         },
         builder: (context, state) {
@@ -210,9 +212,9 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                             },
                           ),
                           const SizedBox(height: 24),
-                          if (state is BillsError) ...[
+                          if (_errorMessage != null) ...[
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
                               decoration: BoxDecoration(
                                 color: cs.errorContainer,
                                 borderRadius: BorderRadius.circular(10),
@@ -224,10 +226,18 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      state.message,
+                                      _errorMessage!,
                                       style: TextStyle(
                                           color: cs.onErrorContainer),
                                     ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.close,
+                                        color: cs.onErrorContainer, size: 18),
+                                    onPressed: () =>
+                                        setState(() => _errorMessage = null),
+                                    visualDensity: VisualDensity.compact,
+                                    padding: EdgeInsets.zero,
                                   ),
                                 ],
                               ),

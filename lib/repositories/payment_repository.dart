@@ -24,7 +24,20 @@ class PaymentRepository {
       }
       throw Exception('Unexpected processPayment response: $data');
     } on DioException catch (e) {
-      throw Exception(_extractDioMessage(e));
+      final data = e.response?.data;
+      String message = 'An error occurred. Please try again.';
+
+      if (data != null && data is Map) {
+        message = data['error']
+            ?? data['message']
+            ?? data['detail']
+            ?? data['title']
+            ?? message;
+      } else if (data is String && data.isNotEmpty) {
+        message = data;
+      }
+
+      throw Exception(message);
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Unexpected error: ${e.toString()}');
@@ -39,27 +52,23 @@ class PaymentRepository {
           .map((json) => PaymentHistoryModel.fromJson(json))
           .toList();
     } on DioException catch (e) {
-      throw Exception(_extractDioMessage(e));
+      final data = e.response?.data;
+      String message = 'An error occurred. Please try again.';
+
+      if (data != null && data is Map) {
+        message = data['error']
+            ?? data['message']
+            ?? data['detail']
+            ?? data['title']
+            ?? message;
+      } else if (data is String && data.isNotEmpty) {
+        message = data;
+      }
+
+      throw Exception(message);
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Unexpected error: ${e.toString()}');
     }
-  }
-
-  String _extractDioMessage(DioException e) {
-    final data = e.response?.data;
-    String message = 'An error occurred. Please try again.';
-
-    if (data != null && data is Map) {
-      message = data['error']
-          ?? data['message']
-          ?? data['title']
-          ?? data['detail']
-          ?? message;
-    } else if (data is String && data.isNotEmpty) {
-      message = data;
-    }
-
-    return message;
   }
 }
