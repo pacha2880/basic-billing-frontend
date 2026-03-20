@@ -1,0 +1,127 @@
+Frontend Requirements (Structured)
+
+1) Feature: Create a New Bill
+  - User Story: As an administrator/tester, I want to register a new service bill so I can track and later pay it.
+  - UI/Pages:
+    • "New Bill" screen/form
+  - Data Model (bill):
+    • clientId (string/int)
+    • serviceType (enum: Water, Electricity, Sewer)
+    • billingPeriod (string, format YYYYMM)
+    • amount (number, USD)
+    • status (Pending | Paid)
+  - Inputs:
+    • Client ID (selectable dropdown or free text input)
+    • Service Type (dropdown)
+    • Billing Period (text input capped to YYYYMM)
+    • Amount (numeric input)
+  - Validation Rules:
+    • All fields are required.
+    • Billing period must match regex ^\d{6}$ (YYYYMM).
+    • Amount must be > 0.
+    • Client must exist (validate against client list/API).
+  - Acceptance Criteria:
+    • Submitting a valid form sends a request to create a bill (POST /bills).
+    • The created bill is persisted with status "Pending".
+    • UI provides clear success notification.
+    • Validation errors are shown for missing/invalid inputs.
+
+2) Feature: Pay an Existing Bill
+  - User Story: As a user, I want to pay an existing unpaid bill so my balance is updated.
+  - UI/Pages:
+    • "Pay Bill" screen/form
+  - Inputs:
+    • Client ID
+    • Service Type
+    • Billing Period (YYYYMM)
+  - Validation Rules:
+    • All fields are required.
+    • Client must exist.
+    • Billing period must be a valid YYYYMM.
+    • There must be an existing unpaid bill for the provided criteria.
+  - Acceptance Criteria:
+    • Submitting a valid payment sends a request to pay (POST /payments).
+    • The corresponding bill status updates to "Paid".
+    • UI displays a confirmation on success.
+    • Errors are shown when bill is missing or already paid.
+
+3) Feature: View Pending Bills
+  - User Story: As a user, I want to see all outstanding bills for a client.
+  - UI/Pages:
+    • "Pending Bills" list view / table
+  - Inputs:
+    • Client ID (lookup)
+  - Display Columns:
+    • Service Type
+    • Billing Period
+    • Amount
+    • Current Status
+  - Behavior:
+    • Lists only unpaid bills (status == Pending) for the selected client.
+    • Data fetched via GET /clients/{id}/pending-bills (OData-supported filtering).
+  - Optional Enhancements:
+    • Inline action to pay a bill directly from the list.
+
+4) Feature: View Payment History
+  - User Story: As a user, I want to review previously paid bills.
+  - UI/Pages:
+    • "Payment History" list view / table
+  - Inputs:
+    • Client ID
+  - Display Columns:
+    • Service Type
+    • Billing Period
+    • Amount Paid
+    • Payment Date
+    • Status
+  - Behavior:
+    • Lists paid bills for the selected client, ordered chronologically.
+    • Data fetched via GET /clients/{id}/payment-history (OData-supported filtering).
+  - Optional Enhancements:
+    • Filtering/sorting by service, date, or amount.
+
+5) General Technical Requirements (applies to all features)
+  - Technology:
+    • React (TypeScript) OR Angular (TypeScript) OR Flutter (Dart).
+  - Architecture:
+    • Use a modern component-based architecture.
+    • Use a global state management solution:
+      - React: Redux Toolkit (preferred) or Context + useReducer (with justification).
+      - Angular: NgRx.
+      - Flutter: Bloc, Riverpod, or Provider.
+  - API Integration:
+    • Use OData for querying/filtering endpoints.
+    • Include JWT Authorization headers on all API requests.
+  - UI:
+    • Use a modern UI framework:
+      - Web: TailwindCSS, Bootstrap, Material UI, etc.
+      - Flutter: Material Design 3 / native widget system.
+    • Build responsive UI (desktop + mobile).
+  - Quality:
+    • Write code in a typed language (TypeScript or Dart).
+    • Avoid deprecated libraries (e.g., jQuery).
+    • Include unit and/or automated tests for key logic (components/hooks/views/services).
+    • Strong typing and robust error handling.
+    • Modular, maintainable, scalable code structure.
+
+6) API Contract (aligned to backend requirements)
+  - Create bill: POST /bills
+    • Payload: { clientId, serviceType, billingPeriod, amount }
+    • Response: bill object including status.
+  - Pay bill: POST /payments
+    • Payload: { clientId, serviceType, billingPeriod }
+    • Response: updated bill object or payment receipt.
+  - Pending bills: GET /clients/{id}/pending-bills
+    • Supports OData query params for filtering/sorting.
+  - Payment history: GET /clients/{id}/payment-history
+    • Supports OData query params for filtering/sorting.
+
+7) Evaluation & Delivery
+  - Evaluation criteria:
+    • Implementation quality, best practices, completeness, organization, readability, maintainability.
+  - Delivery expectations:
+    • Use a GitHub repository.
+    • Include a README explaining:
+      - API functionality.
+      - How to build and run the application.
+      - Any features or requirements not implemented, with reasons.

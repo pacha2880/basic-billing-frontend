@@ -1,0 +1,99 @@
+NEXION Tech Test - Frontend (v3.0)
+
+Overview:
+- Build a frontend application for clients to view and pay service bills (water, electricity, sewer).
+- The evaluation emphasizes modern architecture, strong typing, global state management, and testing.
+- Implement as many features as possible; prioritize code quality, clear structure, and maintainability.
+
+Functional Requirements:
+
+1) Create a New Bill
+- Purpose: Allow manual registration of new service bills (administrative/testing use).
+- Inputs:
+  • Client ID (selectable or typed)
+  • Service Type (Water, Electricity, Sewer)
+  • Billing Period (format: YYYYMM)
+  • Amount (in USD)
+- Validations:
+  • All fields are required.
+  • Billing period must follow YYYYMM format.
+  • Amount must be a positive number.
+  • The selected client must exist.
+- Expected Behavior:
+  • On submission, persist a new bill with initial status "Pending".
+  • Provide clear feedback for success or failure.
+
+2) Pay an Existing Bill
+- Purpose: Enable paying a previously created bill.
+- Inputs:
+  • Client ID
+  • Service Type
+  • Billing Period (format: YYYYMM)
+- Validations:
+  • All fields are required.
+  • The client must exist.
+  • Billing period must follow YYYYMM format.
+  • There must be a corresponding unpaid bill for the provided input.
+- Expected Behavior:
+  • After validation, update the bill status to "Paid".
+  • Show a confirmation to the user.
+
+3) View Pending Bills
+- Purpose: Allow users to see outstanding bills.
+- Input:
+  • Client ID
+- Expected Behavior:
+  • Display a list of unpaid bills for the selected client.
+  • Each entry shows: Service Type, Billing Period, Amount, Current Status.
+- Optional:
+  • Allow inline actions to pay directly from the pending list.
+
+4) View Payment History
+- Purpose: Allow users to review past paid bills.
+- Input:
+  • Client ID
+- Expected Behavior:
+  • Display a chronological list of paid bills including: Service Type, Billing Period, Amount Paid, Payment Date, Status.
+- Optional:
+  • Support filtering or sorting by service, date, or amount.
+
+Technical Requirements:
+- Allowed stacks:
+  • React (TypeScript)
+  • Angular (TypeScript)
+  • Flutter (Dart)
+- Required:
+  • Use modern component-based architecture.
+  • Use OData for querying/filtering endpoints.
+  • Implement JWT Authorization headers.
+  • Code must be in a typed language (TypeScript or Dart).
+  • Do not use deprecated libraries (e.g., jQuery).
+  • Use a modern CSS/UI framework:
+    - Web: TailwindCSS, Bootstrap, Material UI, etc.
+    - Flutter: Material Design 3 / native widget system.
+  • Use appropriate global state management:
+    - React: Redux Toolkit (or Context + useReducer with justification)
+    - Angular: NgRx
+    - Flutter: Bloc, Riverpod, or Provider
+  • Include unit and/or automated tests for key logic (components, hooks, views, services).
+
+Recommendations:
+- Responsive UI that works well on desktop and mobile.
+- Clean, intuitive design with clear visual hierarchy.
+- Strong typing and error handling.
+- Modular, maintainable, and scalable code.
+
+Evaluation Criteria:
+- Implementation quality.
+- Adherence to best practices.
+- Completeness of features.
+- Code organization, readability, and maintainability.
+- Note: Each implemented feature contributes points; prioritize clarity and good design.
+
+Delivery Requirements:
+- Use GitHub or a similar repository.
+- Include a clear README describing:
+  • API functionality.
+  • How to build (dotnet build).
+  • How to run (dotnet run).
+  • Any feature or requirement not implemented and why.
